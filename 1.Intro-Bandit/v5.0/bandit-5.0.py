@@ -8,14 +8,6 @@ matplotlib.use('Agg')
 
 
 class Bandit:
-    # @k_arm: # of arms
-    # @epsilon: probability for exploration in epsilon-greedy algorithm
-    # @initial: initial estimation for each action
-    # @step_size: constant step size for updating estimations
-    # @sample_averages: if True, use sample averages to update estimations instead of constant step size
-    # @UCB_param: if not None, use UCB algorithm to select action
-    # @gradient: if True, use gradient based bandit algorithm
-    # @gradient_baseline: if True, use average reward as baseline for gradient based bandit algorithm
     def __init__(self, k_arm=10, epsilon=0., initial=0., step_size=0.1, sample_averages=False, UCB_param=None,
                  gradient=False, gradient_baseline=False, true_reward=0.):
         self.k = k_arm

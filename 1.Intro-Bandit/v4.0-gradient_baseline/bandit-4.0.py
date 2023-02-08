@@ -21,28 +21,20 @@ class Bandit:
 
 
     def reset(self):
-        # real reward for each action
+        # 改成了均值为 N(self.true_reward, 1) 的正态分布
         self.q_true = np.random.randn(self.k) + self.true_reward
-
-        # estimation for each action
-        self.q_estimation = np.zeros(self.k) 
-
-        # # of chosen times for each action
-        self.action_count = np.zeros(self.k)
-
         self.best_action = np.argmax(self.q_true)
-
+        self.q_estimation = np.zeros(self.k) 
+        self.action_count = np.zeros(self.k)
         self.time = 0
 
-    # get an action for this bandit
     def act(self):
+        # 改成了 softmax
         exp_est = np.exp(self.q_estimation)
         self.action_prob = exp_est / np.sum(exp_est)
         return np.random.choice(self.indices, p=self.action_prob)
 
-    # take an action, update estimation for this action
     def step(self, action):
-        # generate the reward under N(real reward, 1)
         reward = np.random.randn() + self.q_true[action]
         self.time += 1
         self.action_count[action] += 1
@@ -71,9 +63,9 @@ def simulate(runs, time, bandits):
                 rewards[i, r, t] = reward
                 if action == bandit.best_action:
                     best_action_counts[i, r, t] = 1
-    mean_best_action_counts = best_action_counts.mean(axis=1)
+    best_action_rates = best_action_counts.mean(axis=1)
     mean_rewards = rewards.mean(axis=1)
-    return mean_best_action_counts, mean_rewards
+    return best_action_rates, mean_rewards
 
 
 
@@ -83,14 +75,14 @@ def algorithm(runs=2000, time=1000):
     bandits.append(Bandit(gradient=True, step_size=0.1, gradient_baseline=False, true_reward=4))
     bandits.append(Bandit(gradient=True, step_size=0.4, gradient_baseline=True, true_reward=4))
     bandits.append(Bandit(gradient=True, step_size=0.4, gradient_baseline=False, true_reward=4))
-    best_action_counts, _ = simulate(runs, time, bandits)
+    best_action_rates, _ = simulate(runs, time, bandits)
     labels = [r'$\alpha = 0.1$, with baseline',
               r'$\alpha = 0.1$, without baseline',
               r'$\alpha = 0.4$, with baseline',
               r'$\alpha = 0.4$, without baseline']
 
     for i in range(len(bandits)):
-        plt.plot(best_action_counts[i], label=labels[i])
+        plt.plot(best_action_rates[i]*100, label=labels[i])
     plt.xlabel('Steps')
     plt.ylabel('Optimal Action (%)')
     plt.legend()

@@ -66,10 +66,10 @@ def algorithm(runs=2000, time=1000):
     bandits.append(Bandit(epsilon=0.1, initial=0, step_size=0.1))
     best_action_rates, _ = simulate(runs, time, bandits)
 
-    plt.plot(best_action_rates[0], label='$\epsilon = 0, q = 5$')
-    plt.plot(best_action_rates[1], label='$\epsilon = 0.1, q = 0$')
+    plt.plot(best_action_rates[0]*100, label='$\epsilon = 0, q = 5$')
+    plt.plot(best_action_rates[1]*100, label='$\epsilon = 0.1, q = 0$')
     plt.xlabel('Steps')
-    plt.ylabel('% optimal action')
+    plt.ylabel('Optimal Action (%)')
     plt.legend()
 
     plt.savefig('imgs/bandit-2.0.png')
