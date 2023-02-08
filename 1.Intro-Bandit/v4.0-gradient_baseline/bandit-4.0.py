@@ -6,7 +6,6 @@ from tqdm import trange
 
 matplotlib.use('Agg')
 
-
 class Bandit:
     def __init__(self, k_arm=10, step_size=0.1,
                  gradient=False, gradient_baseline=False, true_reward=0.):
@@ -18,7 +17,6 @@ class Bandit:
         self.gradient_baseline = gradient_baseline
         self.average_reward = 0
         self.true_reward = true_reward
-
 
     def reset(self):
         # 改成了均值为 N(self.true_reward, 1) 的正态分布
@@ -35,11 +33,12 @@ class Bandit:
         return np.random.choice(self.indices, p=self.action_prob)
 
     def step(self, action):
-        reward = np.random.randn() + self.q_true[action]
         self.time += 1
         self.action_count[action] += 1
+        
+        reward = np.random.randn() + self.q_true[action]
         self.average_reward += (reward - self.average_reward) / self.time
-
+        
         one_hot = np.zeros(self.k)
         one_hot[action] = 1
         if self.gradient_baseline:
