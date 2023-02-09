@@ -34,7 +34,7 @@ class Bandit:
                 (self.action_count + 1e-5))
             q_best = np.max(UCB_estimation)
             return np.random.choice(np.where(UCB_estimation == q_best)[0])
-        
+       
         else:
             q_best = np.max(self.q_estimation)
             return np.random.choice(np.where(self.q_estimation == q_best)[0])

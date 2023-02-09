@@ -24,49 +24,44 @@ class Bandit:
         self.initial = initial
 
     def reset(self):
-        # real reward for each action
         self.q_true = np.random.randn(self.k) + self.true_reward
-
-        # estimation for each action
+        self.best_action = np.argmax(self.q_true)
         self.q_estimation = np.zeros(self.k) + self.initial
 
-        # # of chosen times for each action
         self.action_count = np.zeros(self.k)
-
-        self.best_action = np.argmax(self.q_true)
-
         self.time = 0
 
-    # get an action for this bandit
     def act(self):
+        # e-贪心算法
         if np.random.rand() < self.epsilon:
             return np.random.choice(self.indices)
 
+        # UCB
         if self.UCB_param is not None:
             UCB_estimation = self.q_estimation + \
                 self.UCB_param * np.sqrt(np.log(self.time + 1) / (self.action_count + 1e-5))
             q_best = np.max(UCB_estimation)
             return np.random.choice(np.where(UCB_estimation == q_best)[0])
 
+        # gradient
         if self.gradient:
             exp_est = np.exp(self.q_estimation)
             self.action_prob = exp_est / np.sum(exp_est)
             return np.random.choice(self.indices, p=self.action_prob)
-
+        # 0-贪心算法
         q_best = np.max(self.q_estimation)
         return np.random.choice(np.where(self.q_estimation == q_best)[0])
 
-    # take an action, update estimation for this action
     def step(self, action):
-        # generate the reward under N(real reward, 1)
         reward = np.random.randn() + self.q_true[action]
         self.time += 1
         self.action_count[action] += 1
         self.average_reward += (reward - self.average_reward) / self.time
 
+        # sample average 更新公式
         if self.sample_averages:
-            # update estimation using sample averages
             self.q_estimation[action] += (reward - self.q_estimation[action]) / self.action_count[action]
+        # gradient 更新公式
         elif self.gradient:
             one_hot = np.zeros(self.k)
             one_hot[action] = 1
@@ -75,8 +70,8 @@ class Bandit:
             else:
                 baseline = 0
             self.q_estimation += self.step_size * (reward - baseline) * (one_hot - self.action_prob)
+        # alpha 更新公式
         else:
-            # update estimation with constant step size
             self.q_estimation[action] += self.step_size * (reward - self.q_estimation[action])
         return reward
 
@@ -93,13 +88,13 @@ def simulate(runs, time, bandits):
                 rewards[i, r, t] = reward
                 if action == bandit.best_action:
                     best_action_counts[i, r, t] = 1
-    mean_best_action_counts = best_action_counts.mean(axis=1)
+    best_action_rates = best_action_counts.mean(axis=1)
     mean_rewards = rewards.mean(axis=1)
-    return mean_best_action_counts, mean_rewards
+    return best_action_rates, mean_rewards
 
 
 def algorithm(runs=2000, time=1000):
-    labels = ['epsilon-greedy', 'gradient bandit',
+    labels = ['$\epsilon$-greedy', 'gradient bandit',
               'UCB', 'optimistic initialization']
     generators = [lambda epsilon: Bandit(epsilon=epsilon, sample_averages=True),
                   lambda alpha: Bandit(gradient=True, step_size=alpha, gradient_baseline=True),
@@ -127,7 +122,7 @@ def algorithm(runs=2000, time=1000):
     plt.ylabel('Average reward')
     plt.legend()
 
-    plt.savefig('./figure_2_6.png')
+    plt.savefig('.imgs/bandit-5.0.png')
     plt.close()
 
 

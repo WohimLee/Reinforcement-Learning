@@ -13,7 +13,6 @@ class Bandit:
         self.epsilon = epsilon
         self.initial = initial
         self.step_size = step_size
-        self.time = 0
         self.indices = np.arange(self.k)
         
 
@@ -23,7 +22,6 @@ class Bandit:
         # 这里初始值改成了 initial
         self.q_estimation = np.zeros(self.k) + self.initial
         self.action_count = np.zeros(self.k)
-        self.time = 0
 
     def act(self):
         if np.random.rand() < self.epsilon:
@@ -35,7 +33,6 @@ class Bandit:
     def step(self, action):
         # 每次 Action 实际的 Reward
         reward = np.random.randn() + self.q_true[action]
-        self.time += 1
         self.action_count[action] += 1
 
         # 这里改成了乘以 step_size
