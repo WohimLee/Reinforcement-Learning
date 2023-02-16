@@ -117,48 +117,8 @@ def draw_policy(optimal_values):
     ax.add_table(tb)
 
 
-def figure_3_2():
-    value = np.zeros((WORLD_SIZE, WORLD_SIZE))
-    while True:
-        # keep iteration until convergence
-        new_value = np.zeros_like(value)
-        for i in range(WORLD_SIZE):
-            for j in range(WORLD_SIZE):
-                for action in ACTIONS:
-                    (next_i, next_j), reward = step([i, j], action)
-                    # bellman equation
-                    new_value[i, j] += ACTION_PROB * (reward + DISCOUNT * value[next_i, next_j])
-        if np.sum(np.abs(value - new_value)) < 1e-4:
-            draw_image(np.round(new_value, decimals=2))
-            plt.savefig('./imgs/figure_3_2.png')
-            plt.close()
-            break
-        value = new_value
-
-def figure_3_2_linear_system():
-    '''
-    Here we solve the linear system of equations to find the exact solution.
-    We do this by filling the coefficients for each of the states with their respective right side constant.
-    '''
-    A = -1 * np.eye(WORLD_SIZE * WORLD_SIZE)
-    b = np.zeros(WORLD_SIZE * WORLD_SIZE)
-    for i in range(WORLD_SIZE):
-        for j in range(WORLD_SIZE):
-            s = [i, j]  # current state
-            index_s = np.ravel_multi_index(s, (WORLD_SIZE, WORLD_SIZE))
-            for a in ACTIONS:
-                s_, r = step(s, a)
-                index_s_ = np.ravel_multi_index(s_, (WORLD_SIZE, WORLD_SIZE))
-
-                A[index_s, index_s_] += ACTION_PROB * DISCOUNT
-                b[index_s] -= ACTION_PROB * r
-
-    x = np.linalg.solve(A, b)
-    draw_image(np.round(x.reshape(WORLD_SIZE, WORLD_SIZE), decimals=2))
-    plt.savefig('./imgs/figure_3_2_linear_system.png')
-    plt.close()
-
-def figure_3_5():
+def algorithm():
+    # 迭代算法，vk = 0
     value = np.zeros((WORLD_SIZE, WORLD_SIZE))
     while True:
         # keep iteration until convergence
@@ -168,21 +128,26 @@ def figure_3_5():
                 values = []
                 for action in ACTIONS:
                     (next_i, next_j), reward = step([i, j], action)
-                    # value iteration
+                    # 计算出每个 Action Value
                     values.append(reward + DISCOUNT * value[next_i, next_j])
+                # 选出最大的 Action Value 就是最优 Action
                 new_value[i, j] = np.max(values)
+        # 迭代结束判断条件
         if np.sum(np.abs(new_value - value)) < 1e-4:
             draw_image(np.round(new_value, decimals=2))
-            plt.savefig('./imgs/figure_3_5.png')
+            plt.savefig('./imgs/optimal.png')
             plt.close()
             draw_policy(new_value)
-            plt.savefig('./imgs/figure_3_5_policy.png')
+            plt.savefig('./imgs/optimal_policy.png')
             plt.close()
             break
+        # 更新 value 的值，再接着迭代
         value = new_value
 
 
 if __name__ == '__main__':
-    figure_3_2_linear_system()
-    # figure_3_2()
-    # figure_3_5()
+    algorithm()
+
+
+
+
